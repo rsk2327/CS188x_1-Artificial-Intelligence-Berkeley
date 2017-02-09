@@ -24,6 +24,7 @@ import samples
 import sys
 import util
 from pacman import GameState
+from util import manhattanDistance
 
 TEST_SET_SIZE = 100
 DIGIT_DATUM_WIDTH=28
@@ -78,7 +79,8 @@ def enhancedFeatureExtractorDigit(datum):
     features =  basicFeatureExtractorDigit(datum)
 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    pixels = datum.getPixels()
+    
 
     return features
 
@@ -124,7 +126,85 @@ def enhancedPacmanFeatures(state, action):
     """
     features = util.Counter()
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    closestFood = 999999
+    closestGhost=999999
+    closestActiveGhost = 9999999
+    activeGhostCount=0
+    avgGhostDist=0
+
+    state = state.generateSuccessor(0, action)
+    currentPos = state.getPacmanPosition()
+    ghostPositions = state.getGhostPositions()
+    
+    width,height = state.data.layout.width,state.data.layout.height
+    food = state.getFood().asList()
+
+    for f in food:
+        closestFood = min(closestFood, manhattanDistance(currentPos, f))
+
+    ghostStates=state.getGhostStates()
+    activeGhosts=0
+    for i in range(1,state.getNumAgents()):
+        dist = manhattanDistance(currentPos,ghostPositions[i-1])
+        # features['ghostDist'+str(i)] = dist
+        closestGhost  = min(dist,closestGhost)
+        
+        if ghostStates[i-1].scaredTimer==0:
+            closestActiveGhost = min(closestActiveGhost,dist)
+            activeGhosts += 1
+            # features['ghostActive'+str(i)]=1
+            
+        else:
+            # features['ghostActive'+str(i)]=0
+            activeGhosts = activeGhosts
+
+        avgGhostDist += dist
+    avgGhostDist = avgGhostDist/state.getNumAgents()
+
+    capsules = state.getCapsules()
+    closestCapsule = 9999999
+    for i in range(len(capsules)):
+        closestCapsule = min(closestCapsule, manhattanDistance(currentPos,capsules[i]))
+
+
+
+
+    # features['closestActiveGhost'] = closestActiveGhost
+    # features['activeGhost'] = activeGhosts
+    # features['closestCapsule'] = closestCapsule
+    features['closestFood']  = closestFood
+    #features['closestGhost'] = closestGhost
+    # features['avgGhostDist'] = avgGhostDist
+    # features['capsulesLeft'] = len(state.getCapsules())
+    #features['score'] = state.getScore()
+    '''
+    state=state.generateSuccessor(0,action)
+    features = util.Counter()
+    foods=state.getFood().asList()
+    pac=state.getPacmanPosition()
+    minD=9999
+    for food in foods:
+        d=util.manhattanDistance(food,pac)
+        minD=min(d,minD)
+    if minD!=9999:
+        features["closest food"] = 1.0/minD
+    else:
+        features["closest food"] = 2
+
+    # if features["closest food"]==0:
+        # pdb.set_trace()
+
+
+    minD=10000000000
+    for ghost in state.getGhostPositions():
+        d=util.manhattanDistance(pac,ghost) 
+        minD=min(d,minD)
+
+    features["closest ghost"] = minD#1/pow(minD,2)
+
+    return features
+    '''
     return features
 
 
