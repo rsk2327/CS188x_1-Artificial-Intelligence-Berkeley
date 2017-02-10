@@ -141,70 +141,27 @@ def enhancedPacmanFeatures(state, action):
     food = state.getFood().asList()
 
     for f in food:
-        closestFood = min(closestFood, manhattanDistance(currentPos, f))
+        closestFood = min(closestFood, 1.0/manhattanDistance(currentPos, f))
+    # features['closestFood'] = closestFood
 
     ghostStates=state.getGhostStates()
     activeGhosts=0
     for i in range(1,state.getNumAgents()):
-        dist = manhattanDistance(currentPos,ghostPositions[i-1])
-        # features['ghostDist'+str(i)] = dist
+        if manhattanDistance(currentPos,ghostPositions[i-1])==0:
+            dist=0
+        else:
+            dist = manhattanDistance(currentPos,ghostPositions[i-1])
+    
         closestGhost  = min(dist,closestGhost)
         
-        if ghostStates[i-1].scaredTimer==0:
-            closestActiveGhost = min(closestActiveGhost,dist)
-            activeGhosts += 1
-            # features['ghostActive'+str(i)]=1
-            
-        else:
-            # features['ghostActive'+str(i)]=0
-            activeGhosts = activeGhosts
 
-        avgGhostDist += dist
-    avgGhostDist = avgGhostDist/state.getNumAgents()
-
+    # features['closestGhost'] = closestGhost
+    
     capsules = state.getCapsules()
     closestCapsule = 9999999
     for i in range(len(capsules)):
         closestCapsule = min(closestCapsule, manhattanDistance(currentPos,capsules[i]))
 
-
-
-
-    # features['closestActiveGhost'] = closestActiveGhost
-    # features['activeGhost'] = activeGhosts
-    # features['closestCapsule'] = closestCapsule
-    features['closestFood']  = closestFood
-    #features['closestGhost'] = closestGhost
-    # features['avgGhostDist'] = avgGhostDist
-    # features['capsulesLeft'] = len(state.getCapsules())
-    #features['score'] = state.getScore()
-    '''
-    state=state.generateSuccessor(0,action)
-    features = util.Counter()
-    foods=state.getFood().asList()
-    pac=state.getPacmanPosition()
-    minD=9999
-    for food in foods:
-        d=util.manhattanDistance(food,pac)
-        minD=min(d,minD)
-    if minD!=9999:
-        features["closest food"] = 1.0/minD
-    else:
-        features["closest food"] = 2
-
-    # if features["closest food"]==0:
-        # pdb.set_trace()
-
-
-    minD=10000000000
-    for ghost in state.getGhostPositions():
-        d=util.manhattanDistance(pac,ghost) 
-        minD=min(d,minD)
-
-    features["closest ghost"] = minD#1/pow(minD,2)
-
-    return features
-    '''
     return features
 
 
