@@ -12,29 +12,33 @@ moveList = [{'up':None,'left':None,'right':1,'down':3},
 
 class gameState():
     
-    def __init__(state):
+    def __init__(self,state):
         self.state = state
         
         self.blankPos = self.state.find('0')
+        self.path=[]
         
         
-    def goalState():
+    def goalState(self):
         
         if self.state == "012345678":
             return 1
         else:
             return 0
         
-    def getChildren(action):
+    def getChildren(self,action):
             
         newBlankPos = moveList[self.blankPos][action]
-            
+        
+          
         if newBlankPos != None:
             stateList = list(self.state)
             stateList[self.blankPos],stateList[newBlankPos] = stateList[newBlankPos],stateList[self.blankPos]
             newState = ''.join(stateList)
-                
-            return gameState(newState)
+            
+            childState = gameState(newState)
+            childState.path = self.path + [action]
+            return childState
         
         return None
                 
@@ -48,7 +52,7 @@ class Queue():
     def push(self,x):
         self.values = self.values + [x]
         
-    def pop(self,x):
+    def pop(self):
         top = self.values[0]
         self.values = self.values[1:]
         return top
@@ -59,7 +63,7 @@ class Queue():
         else:
             return 0
         
-    def length(self,x):
+    def length(self):
         return len(self.values)
     
 class Stack():
@@ -75,54 +79,79 @@ class Stack():
             return 1
         else:
             return 0
-    def pop(self,x):
+    def pop(self):
         top = self.values[0]
         self.values = self.values[1:]
         return top
     
-    def length(self,x):
+    def length(self):
         return len(self.values)
-
 
 
 class bfs():
     
-    def __init__(x):
-        self.startState = x
+    def __init__(self,x):
+        self.startNode = x
         self.nodes_expanded = 0
         self.fringe_size = 0
-        self.max_fringe_size=0
+        self.max_fringe_size = 0
         self.search_depth = 0
         self.max_search_depth = 0
         self.running_time = 0
         self.max_ram_usage = 0
         
-        explored = set()
-        fringe = Queue()
-        fringe.push(x)
-        path = []
-        self.solve(fringe,path,depth=0)
+        self.explored = set()
+        self.fringe = Queue()
+        self.fringe.push(x)
+		
+        self.bfsPath = []
         
+    def solve(self):
         
-    def solve(fringe,explored,path,depth):
+        if self.fringe.isEmpty()==0:
+            
+            self.fringe_size = self.fringe.length()
+            
+            if self.fringe_size > self.max_fringe_size:
+                self.max_fringe_size = self.fringe_size
+            
+            topNode = self.fringe.pop()
+            self.fringe_size = self.fringe.length()
+            
+            self.search_depth = len(topNode.path)
+            
+            if self.search_depth > self.max_search_depth:
+                self.max_search_depth = self.search_depth
+            
+            self.explored.add(topNode.state)
+            
+            self.nodes_expanded += 1
+            
+            if topNode.goalState() == 1:
+                self.bfsPath = topNode.path
+                return topNode.path
                 
-        if fringe.isEmpty()==0:
-            topNode = fringe.pop()
-        
-            explored.add(topNode)
-            if topNode.goalState()==1:
-                return path
+            for action in ["up","down","left","right"]:
+                newState =  topNode.getChildren(action)
                 
-        	for action in ['up','left','right','down']:
-                
-                newState = topNode.getChildren(action)
-                
-                if newState != None and newState not in fringe.values and newState not in explored:
-                    fringe.push(newState)
-                    newPath = path + [action]
-                    depth = len(newPath)
-                    sol = solve(fringe,explored,newPath,depth)
-                    return sol
+                if newState != None and newState.state not in self.fringe.values and newState.state not in self.explored:
+                    self.fringe.push(newState)
                     
             
-        
+            sol = self.solve()
+            return sol
+            
+
+
+checkState = gameState('125340678')
+checkState.path=[]
+
+a = bfs(checkState)
+sol = a.solve()
+print "sol is "
+print a.bfsPath
+print a.nodes_expanded
+print a.fringe_size
+print a.max_fringe_size
+print a.search_depth
+print a.max_search_depth
